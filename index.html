@@ -95,16 +95,92 @@ img{max-width:100%;display:block}
 .btn:active{transform:translateY(2px);box-shadow:0 2px 0 var(--navy-2)}
 .link-src{font-size:13px;font-weight:500;text-underline-offset:3px}
 
-/* カウンター用追加スタイル */
-.download-counter {
-  font-size: 13px;
-  font-weight: 500;
+/* ---------- ニキシー管カウンターシステム ---------- */
+.nixie-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.nixie-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+}
+.nixie-tube-container {
+  display: flex;
+  gap: 3px;
+  background: #11141a; /* チューブベースの黒い土台 */
+  padding: 4px 6px;
+  border-radius: 8px;
+  border: 1.5px solid #2c3545;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
+}
+/* ガラス管の表現 */
+.nixie-tube {
+  background: linear-gradient(90deg, #1f1f2e 0%, #0b0b11 50%, #1f1f2e 100%);
+  border-radius: 4px;
+  width: 18px;
+  height: 28px;
   display: flex;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 
+    inset 1px 0 0 rgba(255,255,255,0.15), 
+    inset -1px 0 0 rgba(255,255,255,0.15),
+    0 1px 2px rgba(0,0,0,0.5);
+}
+/* ニキシー管の網状のメッシュ背景 */
+.nixie-tube::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  opacity: 0.12;
+  background-image: linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px);
+  background-size: 2px 2px;
+  pointer-events: none;
+}
+/* ネオン発光文字 */
+.nixie-digit {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 20px;
+  font-weight: bold;
+  line-height: 1;
+  color: #ff5500;
+  /* 幾重にも重ねたオレンジのグロー効果 */
+  text-shadow: 
+    0 0 2px #ff3300, 
+    0 0 5px #ff5500, 
+    0 0 10px #ff8800,
+    0 0 15px #ffaa00;
+  position: relative;
+  z-index: 2;
+  transform: translateY(-1px);
+}
+/* カンマ（桁区切り）管 */
+.nixie-comma {
+  width: 8px;
+  background: transparent;
+  box-shadow: none;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 2px;
+}
+.nixie-comma::before { display: none; }
+.nixie-comma-dot {
+  color: #ff4400;
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 1;
+  text-shadow: 0 0 3px #ff3300, 0 0 8px #ff5500;
 }
 
-/* aco = navy identity / vocal = paper identity (それぞれのGUI配色) */
+/* aco = navy identity / vocal = paper identity */
 .plug--aco{background:linear-gradient(180deg,var(--navy-1),var(--navy-2));
   border-color:var(--navy-line);color:#F4F0E6}
 .plug--aco .eyebrow{color:var(--butter)}
@@ -116,7 +192,6 @@ img{max-width:100%;display:block}
 .plug--vocal .lead,.plug--vocal .feats li{color:#40546E}
 .plug--vocal .plug__head img{background:var(--paper-dim)}
 .plug--vocal .link-src{color:var(--ink-soft)}
-.plug--vocal .download-counter{color:var(--ink-soft)}
 
 /* ---------- how to / notes ---------- */
 .section{margin:44px 0}
@@ -147,12 +222,6 @@ footer{border-top:2px solid var(--panel-line);margin-top:56px;padding:28px 0 44p
   font-size:12px;color:var(--ink-soft)}
 footer p{margin-bottom:6px}
 footer .c{margin-top:14px;font-family:var(--disp);font-weight:700;color:var(--ink)}
-
-/* setup helper: GITHUB_USER 未設定のときだけ表示 */
-#setup-note{display:none;position:fixed;left:12px;right:12px;bottom:12px;z-index:9;
-  background:var(--navy-2);color:#fff;border-radius:12px;padding:12px 16px;
-  font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
-#setup-note code{background:rgba(255,255,255,.15);padding:1px 6px;border-radius:6px}
 
 :focus-visible{outline:3px solid var(--butter);outline-offset:2px}
 .plug--vocal :focus-visible{outline-color:var(--ink)}
@@ -188,7 +257,7 @@ footer .c{margin-top:14px;font-family:var(--disp);font-weight:700;color:var(--in
       </div>
       <p class="lead">アコギの音をきらびやかに、存在感をアップさせる専用プラグイン。</p>
       <ul class="feats">
-        <li>アコギ特有の「箱鳴り」と「きらめき」をワンノブで調整</li>
+        <li>アコギ特有 of 「箱鳴り」と「きらめき」をワンノブで調整</li>
         <li>ピエゾ特有の硬さを和らげるモデリング</li>
         <li>配信のバック演奏でも歌を邪魔しない絶妙なコンプレッション</li>
       </ul>
@@ -215,8 +284,16 @@ footer .c{margin-top:14px;font-family:var(--disp);font-weight:700;color:var(--in
       </ul>
       <div class="actions">
         <a href="https://github.com/gzzio1989/VocalGzzio/releases/tag/v1.6.1" class="btn">ダウンロード</a>
-        <!-- カウンターを表示する箇所 -->
-        <span class="download-counter" id="vocal-counter">📊 読み込み中...</span>
+        
+        <!-- ニキシー管風カウンターエリア -->
+        <div class="nixie-wrapper">
+          <span class="nixie-label">DL COUNT</span>
+          <div class="nixie-tube-container" id="nixie-counter">
+            <!-- JavaScriptでここに1文字ずつ真空管(.nixie-tube)が生成されます -->
+            <div class="nixie-tube"><span class="nixie-digit">-</span></div>
+          </div>
+        </div>
+
         <a href="https://github.com/gzzio1989/VocalGzzio" class="link-src" target="_blank" rel="noopener">Source Code</a>
       </div>
     </section>
@@ -245,10 +322,9 @@ footer .c{margin-top:14px;font-family:var(--disp);font-weight:700;color:var(--in
   </div>
 </footer>
 
-<!-- ダウンロードカウンターを取得するJavaScript -->
+<!-- ニキシー管生成ロジックを含むJavaScript -->
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-  // GitHub APIを使って特定のタグ(v1.6.1)のリリース情報を取得
   const repo = "gzzio1989/VocalGzzio";
   const tag = "v1.6.1";
   const apiUrl = `https://api.github.com/repos/${repo}/releases/tags/${tag}`;
@@ -260,20 +336,40 @@ document.addEventListener("DOMContentLoaded", function() {
     })
     .then(data => {
       let totalDownloads = 0;
-      // リリースに含まれる全アセットのダウンロード数を合算
       if (data.assets && data.assets.length > 0) {
         data.assets.forEach(asset => {
           totalDownloads += asset.download_count;
         });
-        // 取得した数値を画面に反映
-        document.getElementById("vocal-counter").textContent = `📊 DL数: ${totalDownloads.toLocaleString()}回`;
+        
+        // 数値をカンマ区切りの文字列にする (例: 1,234)
+        const countStr = totalDownloads.toLocaleString();
+        const container = document.getElementById("nixie-counter");
+        container.innerHTML = ""; // 初期表示の「-」をクリア
+
+        // 文字列を一文字ずつニキシー管にバラして生成
+        for (let char of countStr) {
+          if (char === ",") {
+            // カンマ用の特殊な管
+            const commaTube = document.createElement("div");
+            commaTube.className = "nixie-tube nixie-comma";
+            commaTube.innerHTML = `<span class="nixie-comma-dot">,</span>`;
+            container.appendChild(commaTube);
+          } else {
+            // 通常の数字管
+            const tube = document.createElement("div");
+            tube.className = "nixie-tube";
+            tube.innerHTML = `<span class="nixie-digit">${char}</span>`;
+            container.appendChild(tube);
+          }
+        }
       } else {
-        document.getElementById("vocal-counter").textContent = ""; // アセットがなければ非表示
+        document.getElementById("nixie-counter").parentElement.style.display = "none";
       }
     })
     .catch(error => {
       console.error("Error fetching GitHub release stats:", error);
-      document.getElementById("vocal-counter").textContent = ""; // エラー時はスペースを考慮して空にする
+      // エラー時はカウンターごと非表示にする
+      document.getElementById("nixie-counter").parentElement.style.display = "none";
     });
 });
 </script>
