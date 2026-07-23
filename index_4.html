@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<!--
+  VocalGzzio — GitHub Pages site (docs/index.html)
+
+  SETUP: replace every "YOUR-ACCOUNT" below with your GitHub account name,
+  then enable Pages in the repository settings:
+      Settings > Pages > Source: "Deploy from a branch" > main / docs
+
+  Language: Japanese and English live side by side. Elements marked class="ja"
+  or class="en" are shown/hidden by the <html data-lang> attribute, so the page
+  still reads correctly if JavaScript never runs.
+-->
+<html lang="ja" data-lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ボーカルグッジオ VocalGzzio — 歌もトークも、これ一本で</title>
+<meta name="description" content="VocalGzzio (ボーカルグッジオ) is a free, open-source vocal channel strip for Windows (VST3 + Standalone): auto-tune, de-noise, compression, voice change and reverb in one plugin.">
+<link rel="icon" href="assets/puniguji.png">
+<meta property="og:title" content="ボーカルグッジオ VocalGzzio">
+<meta property="og:description" content="歌もトークも、これ一本で。Windows用のボーカルチャンネルストリップ（無料・オープンソース）">
+<meta property="og:image" content="assets/ui-fx.png">
+<meta property="og:type" content="website">
+<style>
+/* ---------------------------------------------------------------
+   Tokens — taken from the plugin's own "yuru-kawa" palette so the
+   site and the product look like the same thing.
+   --------------------------------------------------------------- */
+:root{
+  --cream:#fdfaf3;      /* page */
+  --blush:#fceef1;      /* soft bands */
+  --paper:#ffffff;      /* cards */
+  --cocoa:#5b5147;      /* ink */
+  --cocoa-soft:#736a5c;  /* secondary ink (AA on cream/paper/blush) */
+  --line:#e6ddcb;       /* hairlines */
+  --mint:#8fd8c4;       /* plugin accent */
+  --mint-deep:#2f7a69;   /* accent text: AA on cream */
+  --straw:#f49ab4;      /* the pink straw */
+  --berry:#c24b72;      /* primary action */
+  --peach:#f7a98f;
+  --mango:#f6c971;
+  --soda:#a9d9ee;
+  --melon:#b6de9b;
+  --grape:#c7aee0;
+  --shadow:0 10px 30px rgba(120,100,80,.10);
+  --radius:20px;
+  --pad:clamp(18px,4vw,28px);
+}
+@font-face{
+  font-family:'Mochiy Pop One';
+  src:url('assets/MochiyPopOne.ttf') format('truetype');
+  font-weight:400; font-display:swap;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{
+  margin:0; background:var(--cream); color:var(--cocoa);
+  font-family:'Hiragino Kaku Gothic ProN','Yu Gothic Medium','Noto Sans JP',system-ui,-apple-system,'Segoe UI',sans-serif;
+  font-size:16.5px; line-height:1.85; -webkit-font-smoothing:antialiased;
+}
+html[data-lang="ja"] .en{display:none!important}
+html[data-lang="en"] .ja{display:none!important}
+html[data-lang="en"] body{line-height:1.7}
+h1,h2,h3,.display{font-family:'Mochiy Pop One','Hiragino Maru Gothic ProN',system-ui,sans-serif;font-weight:400;letter-spacing:.01em;line-height:1.35}
+a{color:var(--berry)}
+a:focus-visible,button:focus-visible{outline:3px solid var(--mint-deep);outline-offset:3px;border-radius:6px}
+img{max-width:100%;display:block}
+.wrap{max-width:1060px;margin:0 auto;padding:0 var(--pad)}
+/* inline code chip — long Windows paths must wrap on phones */
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.86em;
+  background:var(--blush);border:1px solid var(--line);border-radius:6px;padding:1px 6px;
+  overflow-wrap:anywhere;word-break:break-word}
+section{padding:clamp(52px,8vw,92px) 0}
+.eyebrow{font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;color:var(--mint-deep);font-weight:700;margin:0 0 10px}
+.sec-title{font-size:clamp(1.45rem,3.4vw,2.05rem);margin:0 0 6px}
+.sec-lead{color:var(--cocoa-soft);margin:0 0 34px;max-width:60ch}
+
+/* ---------- top bar ---------- */
+.bar{position:sticky;top:0;z-index:40;background:rgba(253,250,243,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.bar-in{max-width:1060px;margin:0 auto;padding:9px var(--pad);display:flex;align-items:center;gap:14px}
+.bar-mark{display:flex;align-items:center;gap:9px;font-family:'Mochiy Pop One',sans-serif;font-size:1.02rem;text-decoration:none;color:var(--cocoa)}
+.bar-mark img{width:30px;height:30px;border-radius:50%;background:var(--blush)}
+.bar-nav{margin-left:auto;display:flex;align-items:center;gap:18px}
+.bar-nav a{color:var(--cocoa-soft);text-decoration:none;font-size:.9rem}
+.bar-nav a:hover{color:var(--berry)}
+@media (max-width:720px){.bar-nav a{display:none}}
+/* language switch */
+.lang{display:inline-flex;border:2px solid var(--line);border-radius:999px;overflow:hidden;background:var(--paper)}
+.lang button{appearance:none;border:0;background:none;cursor:pointer;font:inherit;font-size:.82rem;font-weight:700;
+  padding:5px 13px;color:var(--cocoa-soft);letter-spacing:.03em}
+.lang button[aria-pressed="true"]{background:var(--mint);color:#33473f}
+
+/* ---------- hero ---------- */
+.hero{position:relative;overflow:hidden;background:linear-gradient(180deg,var(--blush) 0%,var(--cream) 78%)}
+.hero-in{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(20px,4vw,48px);align-items:center;
+  padding:clamp(44px,7vw,78px) 0 clamp(50px,8vw,86px)}
+@media (max-width:820px){.hero-in{grid-template-columns:1fr;text-align:center}}
+.hero h1{font-size:clamp(2.3rem,6.2vw,3.7rem);margin:.1em 0 .18em}
+.hero h1 .sub{display:block;font-size:.42em;color:var(--cocoa-soft);letter-spacing:.12em;margin-top:.5em}
+.hero p.lead{font-size:clamp(1rem,2vw,1.16rem);margin:0 0 26px;max-width:46ch}
+@media (max-width:820px){.hero p.lead{margin-inline:auto}}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+@media (max-width:820px){.cta{justify-content:center}}
+.btn{display:inline-flex;align-items:center;gap:9px;text-decoration:none;font-weight:700;
+  padding:13px 24px;border-radius:999px;border:2px solid transparent;transition:transform .15s ease,box-shadow .15s ease}
+.btn-primary{background:var(--berry);color:#fff;box-shadow:0 8px 20px rgba(194,75,114,.28)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 24px rgba(194,75,114,.34)}
+.btn-ghost{background:var(--paper);color:var(--cocoa);border-color:var(--line)}
+.btn-ghost:hover{transform:translateY(-2px);border-color:var(--mint)}
+.hero-note{margin:16px 0 0;font-size:.86rem;color:var(--cocoa-soft)}
+.mascot{position:relative}
+.mascot img{width:min(330px,80%);margin:0 auto;filter:drop-shadow(0 14px 26px rgba(120,100,80,.18))}
+.bubbles{position:absolute;inset:0;pointer-events:none}
+.bubbles i{position:absolute;bottom:-12%;width:12px;height:12px;border-radius:50%;
+  background:rgba(255,255,255,.9);border:2px solid var(--mint);opacity:0;animation:rise 9s linear infinite}
+.bubbles i:nth-child(2){left:24%;width:9px;height:9px;border-color:var(--straw);animation-delay:1.6s;animation-duration:11s}
+.bubbles i:nth-child(3){left:52%;width:15px;height:15px;border-color:var(--mango);animation-delay:3.4s;animation-duration:10s}
+.bubbles i:nth-child(4){left:78%;width:10px;height:10px;border-color:var(--soda);animation-delay:5.1s;animation-duration:12s}
+.bubbles i:nth-child(1){left:9%}
+@keyframes rise{0%{transform:translateY(0);opacity:0}12%{opacity:.85}100%{transform:translateY(-360px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.bubbles{display:none}}
+
+/* ---------- notice ---------- */
+.notice{background:var(--paper);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.notice-in{display:flex;gap:16px;align-items:flex-start;padding:22px 0}
+.notice .tag{flex:none;background:var(--blush);color:var(--berry);font-weight:700;font-size:.76rem;
+  letter-spacing:.08em;padding:5px 11px;border-radius:999px;margin-top:3px}
+.notice p{margin:0;font-size:.94rem}
+
+/* ---------- juice-glass feature cards (the signature) ---------- */
+.glass-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(268px,1fr));gap:18px}
+.card{background:var(--paper);border:2px solid var(--line);border-radius:var(--radius);padding:22px 22px 24px;
+  box-shadow:var(--shadow);display:flex;gap:16px;align-items:flex-start;transition:transform .18s ease,border-color .18s ease}
+.card:hover{transform:translateY(-3px);border-color:var(--mint)}
+.card h3{margin:0 0 6px;font-size:1.06rem}
+.card p{margin:0;font-size:.92rem;color:var(--cocoa-soft)}
+.badge{display:inline-block;background:var(--mint);color:#2f4a41;font-size:.68rem;font-weight:700;
+  letter-spacing:.08em;padding:2px 8px;border-radius:999px;margin-left:7px;vertical-align:2px}
+/* the glass itself */
+.glass{position:relative;flex:none;width:58px;height:74px;border:2.5px solid var(--cocoa);border-radius:12px 12px 22px 22px;
+  background:rgba(255,255,255,.7);overflow:hidden}
+.glass .liquid{position:absolute;left:0;right:0;bottom:0;height:0;background:var(--juice);
+  transition:height .9s cubic-bezier(.22,1,.36,1)}
+.glass .liquid::after{content:"";position:absolute;top:-6px;left:0;right:0;height:12px;border-radius:50%;
+  background:inherit;filter:brightness(1.06)}
+.is-filled .glass .liquid{height:var(--fill,58%)}
+.straw{position:absolute;top:-16px;right:9px;width:8px;height:56px;background:var(--straw);
+  border:2px solid var(--cocoa);border-radius:4px;transform:rotate(15deg);transform-origin:bottom center}
+.garnish{position:absolute;top:-9px;left:6px;width:17px;height:17px;border-radius:50%;
+  background:var(--peach);border:2.5px solid var(--cocoa)}
+.card-media{position:relative;padding-top:16px}
+@media (prefers-reduced-motion:reduce){.glass .liquid{transition:none}.is-filled .glass .liquid,.glass .liquid{height:var(--fill,58%)}}
+
+/* ---------- stats ---------- */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-top:30px}
+.stat{background:var(--blush);border-radius:16px;padding:16px 18px}
+.stat b{display:block;font-family:'Mochiy Pop One',sans-serif;font-size:1.5rem;line-height:1.2}
+.stat span{font-size:.82rem;color:var(--cocoa-soft)}
+
+/* ---------- screenshot ---------- */
+.shot{background:var(--blush)}
+.shot figure{margin:0;background:var(--paper);border:2px solid var(--line);border-radius:var(--radius);
+  padding:12px;box-shadow:var(--shadow)}
+.shot img{border-radius:12px}
+.shot figcaption{margin-top:12px;font-size:.85rem;color:var(--cocoa-soft);text-align:center}
+
+/* ---------- steps ---------- */
+.steps{counter-reset:step;display:grid;gap:14px;margin:0;padding:0;list-style:none}
+.steps li{counter-increment:step;background:var(--paper);border:2px solid var(--line);border-radius:16px;
+  padding:18px 20px 18px 62px;position:relative}
+.steps li::before{content:counter(step);position:absolute;left:18px;top:16px;width:28px;height:28px;border-radius:50%;
+  background:var(--mint);color:#2f4a41;font-family:'Mochiy Pop One',sans-serif;display:grid;place-items:center;font-size:.95rem}
+.steps h3{margin:0 0 3px;font-size:1rem}
+.steps p{margin:0;font-size:.9rem;color:var(--cocoa-soft)}
+
+/* ---------- installer options ---------- */
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-top:22px}
+.opt{border:2px dashed var(--line);border-radius:16px;padding:16px 18px;background:var(--paper)}
+.opt b{display:block;font-family:'Mochiy Pop One',sans-serif;font-size:1rem;margin-bottom:4px}
+.opt span{font-size:.87rem;color:var(--cocoa-soft)}
+
+/* ---------- code ---------- */
+.code{position:relative;background:#3b3630;color:#f3ece1;border-radius:14px;padding:16px 18px;overflow:auto;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.87rem;line-height:1.7;margin:0 0 14px}
+.code .c{color:#b9ab97}
+.copy{position:absolute;top:10px;right:10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);
+  color:#f3ece1;border-radius:8px;font:inherit;font-size:.76rem;padding:3px 9px;cursor:pointer}
+.copy:hover{background:rgba(255,255,255,.18)}
+.two-col{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+.req{background:var(--paper);border:2px solid var(--line);border-radius:16px;padding:18px 20px}
+.req h3{margin:0 0 8px;font-size:1rem}
+.req ul{margin:0;padding-left:1.15em;font-size:.9rem;color:var(--cocoa-soft)}
+
+/* ---------- history ---------- */
+.history{position:relative;margin:0;padding:0;list-style:none}
+.history::before{content:"";position:absolute;left:11px;top:8px;bottom:8px;width:2px;background:var(--line)}
+.rel{position:relative;padding:0 0 26px 42px}
+.rel::before{content:"";position:absolute;left:4px;top:7px;width:16px;height:16px;border-radius:50%;
+  background:var(--paper);border:3px solid var(--mint)}
+.rel.now::before{background:var(--berry);border-color:var(--berry)}
+.rel h3{margin:0 0 2px;font-size:1.02rem}
+.rel .ver{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.82rem;color:var(--mint-deep);font-weight:700}
+.rel ul{margin:6px 0 0;padding-left:1.1em;font-size:.9rem;color:var(--cocoa-soft)}
+.rel li{margin:2px 0}
+
+/* ---------- faq / footer ---------- */
+details{background:var(--paper);border:2px solid var(--line);border-radius:14px;padding:14px 18px;margin-bottom:10px}
+details summary{cursor:pointer;font-weight:700;font-size:.95rem}
+details p{margin:10px 0 0;font-size:.9rem;color:var(--cocoa-soft)}
+footer{background:var(--paper);border-top:1px solid var(--line);padding:38px 0 46px;font-size:.84rem;color:var(--cocoa-soft)}
+footer h4{font-family:'Mochiy Pop One',sans-serif;font-weight:400;color:var(--cocoa);margin:0 0 8px;font-size:.98rem}
+.foot-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px}
+footer a{color:var(--berry)}
+.foot-end{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.foot-end img{width:34px;height:34px;border-radius:50%;background:var(--blush)}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <div class="bar-in">
+    <a class="bar-mark" href="#top"><img src="assets/puniguji.png" alt="ぷにぐじ / Punigzi">
+      <span class="ja">ボーカルグッジオ</span><span class="en">VocalGzzio</span></a>
+    <nav class="bar-nav">
+      <a href="#features"><span class="ja">できること</span><span class="en">Features</span></a>
+      <a href="#install"><span class="ja">インストール</span><span class="en">Install</span></a>
+      <a href="#build"><span class="ja">ビルド</span><span class="en">Build</span></a>
+      <a href="#history"><span class="ja">更新履歴</span><span class="en">Changelog</span></a>
+      <div class="lang" role="group" aria-label="Language / 言語">
+        <button type="button" data-set-lang="ja" aria-pressed="true">日本語</button>
+        <button type="button" data-set-lang="en" aria-pressed="false">EN</button>
+      </div>
+    </nav>
+  </div>
+</div>
+
+<header class="hero" id="top">
+  <div class="wrap hero-in">
+    <div>
+      <p class="eyebrow"><span class="ja">無料・オープンソース / Windows VST3</span><span class="en">Free &amp; open source / Windows VST3</span></p>
+      <h1><span class="ja">ボーカルグッジオ</span><span class="en">VocalGzzio</span>
+        <span class="sub">VocalGzzio v1.9.0</span></h1>
+      <p class="lead">
+        <span class="ja">歌もトークも、これ一本で。声を整えて、音程を直して、遊べる。配信でもそのまま使える遅延ゼロ設計のボーカルチャンネルストリップです。</span>
+        <span class="en">One plugin for singing and talking. Clean up the voice, fix the pitch, then play with it — a vocal channel strip that adds no latency, so you can leave it on while you stream.</span>
+      </p>
+      <div class="cta">
+        <a class="btn btn-primary" href="https://github.com/YOUR-ACCOUNT/VocalGzzio/releases/latest">
+          <span class="ja">v1.9.0 をダウンロード</span><span class="en">Download v1.9.0</span></a>
+        <a class="btn btn-ghost" href="https://github.com/YOUR-ACCOUNT/VocalGzzio">
+          <span class="ja">GitHub でソースを見る</span><span class="en">Source on GitHub</span></a>
+      </div>
+      <p class="hero-note">
+        <span class="ja">Windows 10 / 11（64bit）・VST3 対応 DAW ／ 単体起動版も同梱。Mac 版は CI で自動ビルドしていますが未署名・動作は未検証です。</span>
+        <span class="en">Windows 10 / 11 (64-bit), any VST3 host. A standalone app is included. macOS builds come out of CI unsigned and untested.</span>
+      </p>
+    </div>
+    <div class="mascot">
+      <div class="bubbles" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <img src="assets/puniguji.png" alt="ぷにぐじ / Punigzi, the VocalGzzio mascot" width="420" height="419">
+    </div>
+  </div>
+</header>
+
+<div class="notice">
+  <div class="wrap notice-in">
+    <span class="tag"><span class="ja">お知らせ</span><span class="en">NOTICE</span></span>
+    <p>
+      <span class="ja"><b>アコグッジオ（AcoGzzio）は配信を終了しました。</b>今後の開発はボーカルグッジオ一本にまとめます。すでにお使いのアコグッジオはそのまま動きますが、更新とサポートは行いません。</span>
+      <span class="en"><b>AcoGzzio is discontinued.</b> Development now goes into VocalGzzio only. Copies of AcoGzzio you already have keep working, but they will not receive updates or support.</span>
+    </p>
+  </div>
+</div>
+
+<section id="features">
+  <div class="wrap">
+    <p class="eyebrow"><span class="ja">できること</span><span class="en">What it does</span></p>
+    <h2 class="sec-title"><span class="ja">声にまつわる作業を、一つの画面で。</span><span class="en">Everything the voice needs, on one screen.</span></h2>
+    <p class="sec-lead">
+      <span class="ja">ノイズ取りから音程補正、声変えまで。プラグインを何枚も重ねなくても、配信や録音でよく使う処理が順番に並んでいます。</span>
+      <span class="en">From noise removal to pitch correction and voice changing — the processing you reach for while streaming or recording, in the order you use it.</span>
+    </p>
+
+    <div class="glass-grid">
+      <article class="card reveal" style="--juice:var(--mint);--fill:82%">
+        <div class="card-media"><div class="garnish"></div><div class="straw"></div>
+          <div class="glass"><div class="liquid"></div></div></div>
+        <div>
+          <h3><span class="ja">オートチューン</span><span class="en">Auto-tune</span><span class="badge">NEW 1.9.0</span></h3>
+          <p><span class="ja">歌のピッチを検出して、選んだキー／スケールへ自動で補正。フォルマントを保つので声の性別感は変わりません。「速さ」でケロケロ〜自然を調整できます。</span>
+             <span class="en">Detects your pitch and snaps it to the key and scale you pick. Formants stay put, so the voice keeps its character. The Speed control takes you from hard robotic steps to a natural glide.</span></p>
+        </div>
+      </article>
+
+      <article class="card reveal" style="--juice:var(--soda);--fill:66%">
+        <div class="card-media"><div class="garnish" style="background:var(--soda)"></div><div class="straw"></div>
+          <div class="glass"><div class="liquid"></div></div></div>
+        <div>
+          <h3><span class="ja">ノイズ除去（LEARN）</span><span class="en">De-noise (LEARN)</span></h3>
+          <p><span class="ja">黙ったまま LEARN を押すと約1.5秒で部屋のノイズを学習。4帯域の適応型で、エアコンや PC のファン音を削ります。遅延は増えません。</span>
+             <span class="en">Stay quiet, press LEARN, and it profiles your room in about 1.5 seconds. Four adaptive bands then pull down fan and air-conditioner noise, with no added latency.</span></p>
+        </div>
+      </article>
+
+      <article class="card reveal" style="--juice:var(--mango);--fill:74%">
+        <div class="card-media"><div class="garnish" style="background:var(--mango)"></div><div class="straw"></div>
+          <div class="glass"><div class="liquid"></div></div></div>
+        <div>
+          <h3><span class="ja">声質・マイク・シーン</span><span class="en">Voice, mic and scene presets</span></h3>
+          <p><span class="ja">声質10種 × マイク10種 × シーン3種（弾き語り／トーク配信／バンド）を掛け合わせるだけで土台ができます。ワンプレス自動設定も。</span>
+             <span class="en">Ten voice types × ten microphones × three scenes (solo, talk stream, band) combine into a starting point. There is also a one-press auto setup that listens and decides for you.</span></p>
+        </div>
+      </article>
+
+      <article class="card reveal" style="--juice:var(--peach);--fill:70%">
+        <div class="card-media"><div class="garnish"></div><div class="straw"></div>
+          <div class="glass"><div class="liquid"></div></div></div>
+        <div>
+          <h3><span class="ja">2段コンプ＋ディエッサー</span><span class="en">Two-stage compression + de-esser</span></h3>
+          <p><span class="ja">ピーク圧縮と平準化を分けて、音量差の激しい歌でも聴きやすく。耳に刺さる「サ行」だけを狙って抑えます。</span>
+             <span class="en">Peak control and levelling run as separate stages, so loud phrases sit with quiet ones. The de-esser targets sibilance only.</span></p>
+        </div>
+      </article>
+
+      <article class="card reveal" style="--juice:var(--grape);--fill:60%">
+        <div class="card-media"><div class="garnish" style="background:var(--grape)"></div><div class="straw"></div>
+          <div class="glass"><div class="liquid"></div></div></div>
+        <div>
+          <h3><span class="ja">声変え・5人ユニゾン</span><span class="en">Voice change and 5-voice unison</span></h3>
+          <p><span class="ja">ピッチとフォルマントを別々に動かせるので、性別感だけ変えることもできます。5人ユニゾンとハモリでコーラスも作れます。</span>
+             <span class="en">Pitch and formant move independently, so you can shift the character without changing the note. Add the five-voice unison and harmony for an instant backing group.</span></p>
+        </div>
+      </article>
+
+      <article class="card reveal" style="--juice:var(--melon);--fill:64%">
+        <div class="card-media"><div class="garnish" style="background:var(--melon)"></div><div class="straw"></div>
+          <div class="glass"><div class="liquid"></div></div></div>
+        <div>
+          <h3><span class="ja">空間・キャラ声</span><span class="en">Space and character FX</span></h3>
+          <p><span class="ja">リバーブ（スプリング／シマー含む）、テンポ同期ディレイ、ダブラー、メガホン、ロボ声。歌でも雑談でも遊べます。</span>
+             <span class="en">Reverb (including spring and shimmer), tempo-synced delay, doubler, megaphone and robot voice — for songs and for goofing around on stream.</span></p>
+        </div>
+      </article>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><b>0<span style="font-size:.6em"> <span class="ja">サンプル</span><span class="en">samples</span></span></b>
+        <span class="ja">報告レイテンシ（声変え・オートチューン使用時を除く）</span><span class="en">Reported latency (except when pitch tools are on)</span></div>
+      <div class="stat"><b>0.24 <span style="font-size:.6em">cent</span></b>
+        <span class="ja">オートチューン補正誤差（平均・実測）</span><span class="en">Average auto-tune correction error (measured)</span></div>
+      <div class="stat"><b>+2.4%</b>
+        <span class="ja">オートチューン検出の CPU 追加分（声1本・実測）</span><span class="en">CPU added by pitch detection, per voice (measured)</span></div>
+      <div class="stat"><b>AGPLv3</b>
+        <span class="ja">ソース公開・改変自由</span><span class="en">Open source, yours to modify</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="shot">
+  <div class="wrap">
+    <p class="eyebrow"><span class="ja">画面</span><span class="en">The screen</span></p>
+    <h2 class="sec-title"><span class="ja">ツマミはぜんぶジュース。</span><span class="en">Every knob is a drink.</span></h2>
+    <p class="sec-lead">
+      <span class="ja">中身は本格的でも、見た目はやさしく。文字サイズと画面モード（ゆるふわ／自然／ブランド／オーロラ／軽量／色覚）を切り替えられます。</span>
+      <span class="en">Serious processing, friendly surface. Text size and screen mode (soft, seasons, brand, aurora, light, colour-blind safe) are all switchable.</span>
+    </p>
+    <figure>
+      <img src="assets/ui-fx.png" alt="VocalGzzio の FX タブ。オートチューンのキー・スケール・補正・速さが並ぶ / The FX tab of VocalGzzio showing the auto-tune key, scale, amount and speed controls" width="1200" height="757">
+      <figcaption><span class="ja">エフェクト（声）タブ。下段左が v1.9.0 で追加したオートチューン、右がキー検出。</span>
+        <span class="en">The FX tab. Auto-tune, added in v1.9.0, sits bottom left; key detection is on the right.</span></figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="install">
+  <div class="wrap">
+    <p class="eyebrow"><span class="ja">インストール</span><span class="en">Install</span></p>
+    <h2 class="sec-title"><span class="ja">3ステップで使えます</span><span class="en">Three steps</span></h2>
+    <p class="sec-lead">
+      <span class="ja">インストーラーが VST3 と単体起動版を入れます。手動でコピーしたい場合は、<code>VocalGzzio.vst3</code> フォルダを <code>C:\Program Files\Common Files\VST3\</code> に置くだけでも動きます。</span>
+      <span class="en">The installer places the VST3 plugin and the standalone app. If you prefer to do it by hand, copy the <code>VocalGzzio.vst3</code> folder into <code>C:\Program Files\Common Files\VST3\</code>.</span>
+    </p>
+    <ol class="steps">
+      <li><h3><span class="ja">セットアップを実行する</span><span class="en">Run the setup</span></h3>
+        <p><span class="ja">Releases から <code>VocalGzzio_Setup_v1.9.0.exe</code> をダウンロードして開きます。</span>
+           <span class="en">Download <code>VocalGzzio_Setup_v1.9.0.exe</code> from Releases and open it.</span></p></li>
+      <li><h3><span class="ja">SmartScreen の警告を通過する</span><span class="en">Get past SmartScreen</span></h3>
+        <p><span class="ja">青い画面が出たら「詳細情報」→「実行」。コード署名をしていないためで、異常ではありません。</span>
+           <span class="en">If the blue screen appears, choose “More info” then “Run anyway”. The installer is unsigned; that is the only reason for the warning.</span></p></li>
+      <li><h3><span class="ja">DAW を再起動して探す</span><span class="en">Restart your DAW and find it</span></h3>
+        <p><span class="ja">FX 追加から「VocalGzzio」を検索。出てこないときはプラグインの再スキャンをしてください。</span>
+           <span class="en">Search for “VocalGzzio” in the plugin browser. If it does not appear, run a plugin re-scan.</span></p></li>
+    </ol>
+
+    <h3 style="margin:34px 0 0"><span class="ja">すでに入っているときは、4つから選べます</span><span class="en">Already installed? Pick one of four</span></h3>
+    <p class="sec-lead" style="margin-bottom:0">
+      <span class="ja">同じバージョンやファイルが見つかると、インストーラーが最初に選択画面を出します。</span>
+      <span class="en">When the installer finds an existing copy, it opens with this choice.</span>
+    </p>
+    <div class="opts">
+      <div class="opt"><b><span class="ja">更新</span><span class="en">Update</span></b>
+        <span class="ja">今の構成のまま、新しいバージョンに入れ替えます。</span>
+        <span class="en">Replace the installed files with the newer version, keeping the same components.</span></div>
+      <div class="opt"><b><span class="ja">修正</span><span class="en">Repair</span></b>
+        <span class="ja">壊れた・消えたファイルを同じバージョンで入れ直します。</span>
+        <span class="en">Reinstall the same version to restore missing or damaged files.</span></div>
+      <div class="opt"><b><span class="ja">追加・変更</span><span class="en">Add or change</span></b>
+        <span class="ja">VST3 と単体起動版のうち、入れるものを選び直します。</span>
+        <span class="en">Choose again which parts to install: the VST3 plugin, the standalone app, or both.</span></div>
+      <div class="opt"><b><span class="ja">削除</span><span class="en">Remove</span></b>
+        <span class="ja">アンインストールします（設定ファイルは残ります）。</span>
+        <span class="en">Uninstall it. Your saved settings stay on the machine.</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="build" class="shot">
+  <div class="wrap">
+    <p class="eyebrow"><span class="ja">ソースからビルド</span><span class="en">Build from source</span></p>
+    <h2 class="sec-title"><span class="ja">3行でビルドできます</span><span class="en">Three commands</span></h2>
+    <p class="sec-lead">
+      <span class="ja">JUCE 8.0.12 は CMake が自動で取ってくるので、事前に用意する必要はありません。初回の設定だけ数分かかります。</span>
+      <span class="en">CMake fetches JUCE 8.0.12 for you, so there is nothing to install by hand. Only the first configure step takes a few minutes.</span>
+    </p>
+
+    <div class="two-col" style="margin-bottom:22px">
+      <div class="req"><h3><span class="ja">必要なもの（Windows）</span><span class="en">You need (Windows)</span></h3>
+        <ul>
+          <li>Visual Studio 2022 <span class="ja">（C++ デスクトップ開発）</span><span class="en">(Desktop development with C++)</span></li>
+          <li>CMake 3.22+</li><li>Git</li>
+          <li><span class="ja">インストーラーを作るなら Inno Setup 6</span><span class="en">Inno Setup 6, if you want the installer</span></li>
+        </ul></div>
+      <div class="req"><h3><span class="ja">macOS / Linux</span><span class="en">macOS / Linux</span></h3>
+        <ul>
+          <li>macOS: Xcode + CMake</li>
+          <li><span class="ja">Linux: build-essential, libasound2-dev, libx11 系, libfreetype6-dev, libfontconfig1-dev, libgl1-mesa-dev</span>
+              <span class="en">Linux: build-essential, libasound2-dev, the libx11 family, libfreetype6-dev, libfontconfig1-dev, libgl1-mesa-dev</span></li>
+          <li><span class="ja">GitHub Actions で Windows と macOS を自動ビルドしています</span><span class="en">GitHub Actions builds Windows and macOS on every push</span></li>
+        </ul></div>
+    </div>
+
+    <pre class="code"><button class="copy" type="button">copy</button><span class="c"># Windows</span>
+git clone https://github.com/YOUR-ACCOUNT/VocalGzzio.git
+cd VocalGzzio
+cmake -B build -A x64
+cmake --build build --config Release</pre>
+
+    <pre class="code"><button class="copy" type="button">copy</button><span class="c"># macOS / Linux</span>
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel 4</pre>
+
+    <p style="font-size:.9rem;color:var(--cocoa-soft)">
+      <span class="ja">出力先：<code>build/VocalGzzio_artefacts/Release/VST3/VocalGzzio.vst3</code>（単体起動版は同じ階層の <code>Standalone/</code>）。インストーラーは <code>Installer.iss</code> を Inno Setup で開いて Compile すると <code>installer_output/</code> に出ます。</span>
+      <span class="en">Output lands in <code>build/VocalGzzio_artefacts/Release/VST3/VocalGzzio.vst3</code>, with the standalone app beside it. For the installer, open <code>Installer.iss</code> in Inno Setup and press Compile; the result appears in <code>installer_output/</code>.</span>
+    </p>
+  </div>
+</section>
+
+<section id="history">
+  <div class="wrap">
+    <p class="eyebrow"><span class="ja">更新履歴</span><span class="en">Changelog</span></p>
+    <h2 class="sec-title"><span class="ja">どこがどう変わってきたか</span><span class="en">What changed, and when</span></h2>
+    <p class="sec-lead">
+      <span class="ja">新しい順。各バージョンの詳しい変更点は、リポジトリ直下の <code>v1.x.x_◯◯_変更点.md</code> に置いてあります。</span>
+      <span class="en">Newest first. The full notes for each release live in the repository root as <code>v1.x.x_…_変更点.md</code>.</span>
+    </p>
+
+    <ol class="history">
+      <li class="rel now">
+        <span class="ver">v1.9.0</span>
+        <h3><span class="ja">オートチューンと、SONAR で認識されない問題の修正</span><span class="en">Auto-tune, and the SONAR detection fix</span></h3>
+        <ul>
+          <li><span class="ja">オートチューンを追加：YIN でピッチ検出 → キー／スケール（9種）へスナップ → 声変えと同じシフターで補正。フォルマントは保持。</span>
+              <span class="en">Added auto-tune: YIN pitch detection, snapping to a key and one of nine scales, applied through the same shifter as the voice changer. Formants are preserved.</span></li>
+          <li><span class="ja">「キー検出」の結果がオートチューンのキーとスケールに自動で入るようになりました。</span>
+              <span class="en">The key-detect button now fills in auto-tune's key and scale for you.</span></li>
+          <li><span class="ja">実測：補正誤差 平均 0.24 セント／THD 0.11%／CPU 追加分 +2.4%（声1本）。</span>
+              <span class="en">Measured: 0.24 cents average correction error, 0.11% THD, and 2.4% extra CPU per voice.</span></li>
+          <li><span class="ja">SONAR 2025.12 でプラグインが出てこない問題を修正（VST3 マニフェストの生成を止め、ホスト側の通常の読み込み経路に戻しました）。</span>
+              <span class="en">Fixed the plugin not appearing in SONAR 2025.12 by switching off the VST3 manifest, so hosts fall back to reading the binary directly.</span></li>
+        </ul>
+      </li>
+
+      <li class="rel"><span class="ver">v1.8.5</span>
+        <h3><span class="ja">夏モードのパネルを透過</span><span class="en">See-through panels in summer</span></h3>
+        <ul><li><span class="ja">自然モードの夏で、パネル越しに海と空が見えるように半透明化（ツマミの見やすさは維持）。</span>
+                <span class="en">Panels in the seasons mode turn translucent in summer so the sea and sky show through, while the knobs stay readable.</span></li></ul></li>
+
+      <li class="rel"><span class="ver">v1.8.4</span>
+        <h3><span class="ja">声変えの音質を作り直し</span><span class="en">Rebuilt the pitch and formant engine</span></h3>
+        <ul>
+          <li><span class="ja">ピッチシフトを正統な位相ボコーダ方式へ変更、FFT を 512→1024 に拡大。ざらつきが大きく減りました。</span>
+              <span class="en">Moved pitch shifting to a proper phase-vocoder method and doubled the FFT size from 512 to 1024, which cleared up most of the roughness.</span></li>
+          <li><span class="ja">夏の背景を「海と空」と分かる絵に描き直し。</span>
+              <span class="en">Redrew the summer background so it reads clearly as sea and sky.</span></li>
+        </ul></li>
+
+      <li class="rel"><span class="ver">v1.8.3</span>
+        <h3><span class="ja">UI バランスの総調整</span><span class="en">A pass over the whole layout</span></h3>
+        <ul><li><span class="ja">四季のサイクルを 40秒→15秒に短縮、モードスイッチの視認性を改善、ノブの径を統一、全体を少し大きく。</span>
+                <span class="en">Seasons now cycle every 15 seconds instead of 40, the mode switch is easier to see, knob sizes match across sections, and everything is slightly larger.</span></li></ul></li>
+
+      <li class="rel"><span class="ver">v1.8.2</span>
+        <h3><span class="ja">「邪魔しない」方向へ再設計</span><span class="en">Redesigned to stay out of the way</span></h3>
+        <ul><li><span class="ja">大きな飾りを全廃して背景＋小さな粒子に。「オーロラ」モードを追加し、ヘッダーの重なりを解消。</span>
+                <span class="en">Dropped the large decorative motifs in favour of a background with small particles, added the aurora mode, and fixed overlapping header elements.</span></li></ul></li>
+
+      <li class="rel"><span class="ver">v1.8.1</span>
+        <h3><span class="ja">モードスイッチと声の作り直し</span><span class="en">Mode switch and voice rework</span></h3>
+        <ul><li><span class="ja">モードスイッチを＊型8スロットに、四季をはっきり見えるように、5人ユニゾンを独立機能化してハモリを追加。</span>
+                <span class="en">The mode switch became an eight-slot star, the seasons got bolder, and the five-voice unison became its own feature with added harmony.</span></li></ul></li>
+
+      <li class="rel"><span class="ver">v1.8.0</span>
+        <h3><span class="ja">画面モード刷新＋声変え統合</span><span class="en">New screen modes, voice changer built in</span></h3>
+        <ul><li><span class="ja">自然（四季が移り変わる）・ブランド・ライブの各モードを刷新し、ボイスチェンジャーを FX タブに統合。5人ユニゾンの DSP を新規実装。</span>
+                <span class="en">Reworked the seasons, brand and live modes, moved the voice changer into the FX tab, and wrote the five-voice unison DSP.</span></li></ul></li>
+
+      <li class="rel"><span class="ver">v1.7.0</span>
+        <h3><span class="ja">「ゆるかわ」モードと負荷改善</span><span class="en">The soft look, and a lighter load</span></h3>
+        <ul><li><span class="ja">ヘッダーの十字スイッチで画面モードを5種類切り替え可能に。描画負荷を下げ、A/B プリセットのバグを修正。</span>
+                <span class="en">Added the five-way mode switch in the header, cut the drawing cost, and fixed an A/B preset bug.</span></li></ul></li>
+
+      <li class="rel"><span class="ver">v1.6.0</span>
+        <h3><span class="ja">リバーブの種類とギアメーター</span><span class="en">Reverb types and the gear meter</span></h3>
+        <ul><li><span class="ja">スプリングとシマーを追加し、リバーブ種別の選択を常に触れる位置へ移動。出力に合わせて回るギアのメーターを追加。</span>
+                <span class="en">Added spring and shimmer reverbs, moved the reverb type selector somewhere you can always reach it, and added the gear meter that spins with your output.</span></li></ul></li>
+
+      <li class="rel"><span class="ver">v1.5.0</span>
+        <h3><span class="ja">ワンプレス自動設定と設定の自動保存</span><span class="en">One-press setup and autosave</span></h3>
+        <ul><li><span class="ja">トーク5秒／うた8秒の録りから設定を組み立てるボタンを追加。ノイズ学習を含む設定が自動で保存されるようになりました。</span>
+                <span class="en">Two buttons build a whole preset from a five-second talk or eight-second sing capture, and your settings — including the learned noise profile — now save themselves.</span></li></ul></li>
+
+      <li class="rel"><span class="ver">v1.4.0</span>
+        <h3><span class="ja">エフェクトタブと解析機能</span><span class="en">The FX tab and the analysis tools</span></h3>
+        <ul><li><span class="ja">コーラス／ディレイ／キャラ声を集めた「エフェクト」タブを新設。キー・コード進行の解析、音符レールと音域チェック、配信ラウドネスメーター、標準／アドバンスド切替を追加。</span>
+                <span class="en">Introduced the FX tab for chorus, delay and character voices, plus key and chord analysis, the note rail with a vocal-range check, a stream loudness meter, and the standard / advanced split.</span></li></ul></li>
+
+      <li class="rel"><span class="ver">v1.3.x</span>
+        <h3><span class="ja">画面デザイン刷新とインストーラー配布</span><span class="en">New look, and an installer</span></h3>
+        <ul><li><span class="ja">3階層の陰影を持つ配色に作り直し、Inno Setup 製インストーラーの配布を開始。</span>
+                <span class="en">Rebuilt the colour scheme around three elevation levels and started shipping an Inno Setup installer.</span></li></ul></li>
+
+      <li class="rel"><span class="ver">v1.2 <span class="ja">以前</span><span class="en">and earlier</span></span>
+        <h3><span class="ja">初期リリース</span><span class="en">First releases</span></h3>
+        <ul><li><span class="ja">チャンネルストリップの基本（ゲート／ノイズ除去／コンプ／EQ／リバーブ）を実装した最初の版です。詳しい変更ログはリポジトリに残っていません。</span>
+                <span class="en">The first versions, with the core channel strip: gate, de-noise, compression, EQ and reverb. Detailed notes for these releases were not kept in the repository.</span></li></ul></li>
+    </ol>
+  </div>
+</section>
+
+<section class="shot" id="faq">
+  <div class="wrap">
+    <p class="eyebrow">FAQ</p>
+    <h2 class="sec-title"><span class="ja">よくある質問</span><span class="en">Questions</span></h2>
+    <details><summary><span class="ja">DAW にプラグインが出てきません</span><span class="en">My DAW does not list the plugin</span></summary>
+      <p><span class="ja">プラグインの再スキャンを実行してください。SONAR 2025.12 で出てこなかった問題は v1.9.0 で修正済みです。古い版をお使いなら更新してください。</span>
+         <span class="en">Run a plugin re-scan first. If you are on SONAR 2025.12, update to v1.9.0 — that release fixes the case where the plugin was silently skipped.</span></p></details>
+    <details><summary><span class="ja">オートチューンはどう設定すればいいですか</span><span class="en">How should I set up auto-tune?</span></summary>
+      <p><span class="ja">キーとスケールを曲に合わせ、補正 80%・速さ 30% から始めてください。ケロケロにしたいときは速さを 0 に近づけます。曲のキーが分からなければ「キー検出」を押すと入ります。</span>
+         <span class="en">Match the key and scale to the song, then start at Amount 80% and Speed 30%. Move Speed toward 0 for the hard robotic effect. If you do not know the key, press Detect key and it fills itself in.</span></p></details>
+    <details><summary><span class="ja">Mac では使えますか</span><span class="en">Does it run on macOS?</span></summary>
+      <p><span class="ja">CI で macOS 版もビルドしていますが、署名も動作確認もしていません。Windows 版を正式サポート対象としています。</span>
+         <span class="en">CI produces macOS builds, but they are unsigned and untested. Windows is the supported platform.</span></p></details>
+    <details><summary><span class="ja">アコグッジオはもう使えないのですか</span><span class="en">Can I still use AcoGzzio?</span></summary>
+      <p><span class="ja">配信は終了しましたが、すでにインストール済みのものは動きます。今後の修正や新機能はボーカルグッジオにのみ入ります。</span>
+         <span class="en">Distribution has stopped, but an installed copy keeps working. All future fixes and features go into VocalGzzio.</span></p></details>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <h4><span class="ja">ライセンス</span><span class="en">License</span></h4>
+        <p><span class="ja">本体は GNU AGPLv3。<a href="https://juce.com">JUCE</a>（AGPLv3 デュアルライセンス）を使用しています。</span>
+           <span class="en">Released under the GNU AGPLv3, built with <a href="https://juce.com">JUCE</a> (AGPLv3 dual licence).</span></p>
+      </div>
+      <div>
+        <h4><span class="ja">商標について</span><span class="en">Trademarks</span></h4>
+        <p><span class="ja">VST は Steinberg Media Technologies GmbH の商標です。マイク名は各社の商標で、本プラグインは非公式です。プリセットは一般に知られる傾向をもとにした目安です。</span>
+           <span class="en">VST is a trademark of Steinberg Media Technologies GmbH. Microphone names belong to their owners; this plugin is unofficial, and the presets are approximations of well-known tendencies.</span></p>
+      </div>
+      <div>
+        <h4><span class="ja">クレジット</span><span class="en">Credits</span></h4>
+        <p><span class="ja">キャラクター：ぷにぐじ。書体：Mochiy Pop One（SIL OFL 1.1、<a href="assets/MochiyPopOne_OFL.txt">ライセンス</a>）。</span>
+           <span class="en">Character: Punigzi. Typeface: Mochiy Pop One (SIL OFL 1.1, <a href="assets/MochiyPopOne_OFL.txt">licence</a>).</span></p>
+      </div>
+    </div>
+    <div class="foot-end">
+      <img src="assets/puniguji.png" alt="">
+      <span><span class="ja">ボーカルグッジオ — by G'zzio ／ 無保証で提供されます。自己責任でご利用ください。</span>
+            <span class="en">VocalGzzio — by G'zzio. Provided without warranty; use at your own risk.</span></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var root = document.documentElement;
+
+  /* ---- language ---- */
+  function setLang(lang, remember) {
+    root.dataset.lang = lang;
+    root.setAttribute('lang', lang);
+    document.querySelectorAll('[data-set-lang]').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(b.dataset.setLang === lang));
+    });
+    if (remember) { try { localStorage.setItem('vg-lang', lang); } catch (e) {} }
+  }
+  var saved = null;
+  try { saved = localStorage.getItem('vg-lang'); } catch (e) {}
+  setLang(saved || ((navigator.language || 'ja').toLowerCase().indexOf('ja') === 0 ? 'ja' : 'en'), false);
+  document.querySelectorAll('[data-set-lang]').forEach(function (b) {
+    b.addEventListener('click', function () { setLang(b.dataset.setLang, true); });
+  });
+
+  /* ---- fill the glasses when a card scrolls in ---- */
+  var cards = document.querySelectorAll('.reveal');
+  if (!('IntersectionObserver' in window)) {
+    cards.forEach(function (c) { c.classList.add('is-filled'); });
+  } else {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add('is-filled'); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.35 });
+    cards.forEach(function (c) { io.observe(c); });
+  }
+
+  /* ---- copy buttons on the code blocks ---- */
+  document.querySelectorAll('.copy').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var pre = btn.parentNode.cloneNode(true);
+      var b = pre.querySelector('.copy'); if (b) b.remove();
+      var text = pre.textContent.trim();
+      var done = function () {
+        var was = btn.textContent;
+        btn.textContent = root.dataset.lang === 'en' ? 'copied' : 'コピーしました';
+        setTimeout(function () { btn.textContent = was; }, 1400);
+      };
+      if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, function () {}); }
+    });
+  });
+})();
+</script>
+</body>
+</html>
